@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ephemeral To-Do List</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>The Most Popular Repo on Github</h1>
+      <h2>Ephemeral To-Do List</h2>
+    </header>
+    
+    <form id="task-form" class="task-form">
+      <input 
+        type="text" 
+        id="task-input" 
+        class="task-input" 
+        required 
+        autocomplete="off" 
+        placeholder="Enter your task..."
+      >
+      <div class="form-controls">
+        <select id="lifespan-select" class="lifespan-select">
+          <option value="5">5 seconds</option>
+          <option value="10">10 seconds</option>
+          <option value="30">30 seconds</option>
+          <option value="60" selected>60 seconds</option>
+          <option value="120">2 minutes</option>
+          <option value="360">6 minutes</option>
+          <option value="720">12 minutes</option>
+          <option value="1440">24 minutes</option>
+        </select>
+        <button type="submit" class="submit-btn">
+          <span>Add Task</span>
+        </button>
+      </div>
+    </form>
+    
+    <ul id="task-list" class="task-list"></ul>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>

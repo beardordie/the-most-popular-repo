@@ -1,0 +1,414 @@
+/* ========================================
+   CSS Variables & Base Styles
+   ======================================== */
+
+:root {
+  /* Colors */
+  --bg-primary: #0a0a0f;
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --neon-green: #00ff88;
+  --neon-yellow: #ffdd00;
+  --neon-red: #ff0055;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  
+  /* Fonts */
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  
+  /* Effects */
+  --glass-blur: blur(10px);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--spacing-lg) var(--spacing-sm);
+  background-image: 
+    radial-gradient(ellipse at top, rgba(0, 255, 136, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(255, 0, 85, 0.03) 0%, transparent 50%);
+}
+
+/* ========================================
+   App Container
+   ======================================== */
+
+.app-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* ========================================
+   Header Styles
+   ======================================== */
+
+.app-header {
+  text-align: center;
+  padding: var(--spacing-md) 0;
+}
+
+.app-header h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+}
+
+.app-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* ========================================
+   Form Styles
+   ======================================== */
+
+.task-form {
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.task-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  outline: none;
+  transition: var(--transition-normal);
+}
+
+.task-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.task-input:focus {
+  border-color: var(--neon-green);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 136, 0.2),
+    inset 0 0 10px rgba(0, 255, 136, 0.05);
+}
+
+.form-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.lifespan-select {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff88' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.lifespan-select:hover,
+.lifespan-select:focus {
+  border-color: var(--neon-green);
+}
+
+.lifespan-select option {
+  background: #1a1a24;
+  color: var(--text-primary);
+}
+
+.submit-btn {
+  padding: 12px 24px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bg-primary);
+  background: linear-gradient(135deg, var(--neon-green), #00cc6a);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 25px rgba(0, 255, 136, 0.5),
+    0 0 40px rgba(0, 255, 136, 0.2);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ========================================
+   Task List Styles
+   ======================================== */
+
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.task-list:empty::before {
+  content: 'No tasks yet. Add one above!';
+  display: block;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  padding: var(--spacing-lg);
+  font-style: italic;
+}
+
+/* ========================================
+   Task Item Styles
+   ======================================== */
+
+.task-item {
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: var(--spacing-sm) 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: var(--transition-normal);
+  overflow: hidden;
+}
+
+.task-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.task-text {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: 500;
+  word-break: break-word;
+  min-width: 0;
+}
+
+/* Individual character spans for disintegration */
+.task-text .char {
+  display: inline-block;
+  transition: var(--transition-fast);
+}
+
+.task-text .char-space {
+  display: inline-block;
+  width: 0.4em;
+}
+
+/* ========================================
+   Countdown Timer Styles
+   ======================================== */
+
+.countdown {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  white-space: nowrap;
+  transition: var(--transition-normal);
+  min-width: 90px;
+  text-align: center;
+}
+
+/* Timer color states */
+.countdown.healthy {
+  color: var(--neon-green);
+  border-color: rgba(0, 255, 136, 0.3);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.countdown.warning {
+  color: var(--neon-yellow);
+  border-color: rgba(255, 221, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
+}
+
+.countdown.danger {
+  color: var(--neon-red);
+  border-color: rgba(255, 0, 85, 0.3);
+  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ========================================
+   Disintegration Animation
+   ======================================== */
+
+.task-item.destroying {
+  pointer-events: none;
+  border-color: rgba(255, 0, 85, 0.5);
+  box-shadow: 
+    0 0 30px rgba(255, 0, 85, 0.3),
+    inset 0 0 20px rgba(255, 0, 85, 0.1);
+}
+
+.task-item.destroying .task-text {
+  overflow: visible;
+}
+
+.task-item.destroying .char {
+  animation: disintegrate 1s ease-out forwards;
+}
+
+@keyframes disintegrate {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) blur(0);
+    color: var(--text-primary);
+  }
+  30% {
+    opacity: 0.9;
+    color: var(--neon-red);
+    text-shadow: 0 0 15px var(--neon-red);
+  }
+  60% {
+    opacity: 0.6;
+    color: var(--neon-red);
+    text-shadow: 0 0 25px var(--neon-red);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(1.5) rotate(15deg);
+    filter: blur(5px);
+  }
+}
+
+/* ========================================
+   Responsive Styles
+   ======================================== */
+
+@media (max-width: 480px) {
+  body {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+  
+  .app-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .app-header h1 {
+    font-size: 1.4rem;
+  }
+  
+  .app-header h2 {
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+  }
+  
+  .task-form {
+    padding: var(--spacing-sm);
+  }
+  
+  .form-controls {
+    flex-direction: column;
+  }
+  
+  .submit-btn {
+    width: 100%;
+  }
+  
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+  }
+  
+  .countdown {
+    align-self: flex-end;
+    font-size: 1rem;
+  }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.hidden {
+  display: none !important;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}

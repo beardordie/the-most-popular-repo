@@ -9,8 +9,10 @@
 
 const CONFIG = {
   STORAGE_KEY: 'ephemeral_tasks',
+  ARCHIVE_KEY: 'ephemeral_archive',
   DESTRUCTION_TIME: 5000, // 5 seconds in ms
   UPDATE_INTERVAL: 50,    // Update UI every 50ms for smooth countdown
+  SNOOZE_DURATION: 60000,  // 60 seconds snooze
   TIMER_THRESHOLDS: {
     WARNING: 0.5,  // 50% remaining - yellow
     DANGER: 0.2   // 20% remaining - red
@@ -25,7 +27,10 @@ const elements = {
   form: document.getElementById('task-form'),
   input: document.getElementById('task-input'),
   lifespanSelect: document.getElementById('lifespan-select'),
-  taskList: document.getElementById('task-list')
+  taskList: document.getElementById('task-list'),
+  archiveToggle: document.getElementById('archive-toggle'),
+  archiveSection: document.getElementById('archive-section'),
+  archiveList: document.getElementById('archive-list')
 };
 
 // ========================================
@@ -55,6 +60,32 @@ function saveTasks(tasks) {
     sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(tasks));
   } catch (error) {
     console.error('Error saving tasks to storage:', error);
+  }
+}
+
+/**
+ * Get all archived tasks from sessionStorage
+ * @returns {Array} Array of archived task objects
+ */
+function getArchivedTasks() {
+  try {
+    const stored = sessionStorage.getItem(CONFIG.ARCHIVE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error reading archived tasks from storage:', error);
+    return [];
+  }
+}
+
+/**
+ * Save archived tasks to sessionStorage
+ * @param {Array} tasks - Array of archived task objects
+ */
+function saveArchivedTasks(tasks) {
+  try {
+    sessionStorage.setItem(CONFIG.ARCHIVE_KEY, JSON.stringify(tasks));
+  } catch (error) {
+    console.error('Error saving archived tasks to storage:', error);
   }
 }
 
@@ -146,6 +177,17 @@ function renderTask(task) {
   li.className = 'task-item';
   li.dataset.taskId = task.id;
   
+  // Checkbox for manual completion
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'task-checkbox';
+  checkbox.title = 'Mark as complete';
+  checkbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      handleManualComplete(task.id);
+    }
+  });
+  
   const textSpan = document.createElement('span');
   textSpan.className = 'task-text';
   textSpan.innerHTML = splitTextIntoChars(task.text);
@@ -154,14 +196,26 @@ function renderTask(task) {
   countdownSpan.className = 'countdown healthy';
   countdownSpan.dataset.countdown = task.id;
   
+  // Snooze button
+  const snoozeBtn = document.createElement('button');
+  snoozeBtn.className = 'snooze-btn';
+  snoozeBtn.title = 'Snooze (+60 seconds)';
+  snoozeBtn.textContent = '⏰';
+  snoozeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleSnooze(task.id);
+  });
+  
+  li.appendChild(checkbox);
   li.appendChild(textSpan);
   li.appendChild(countdownSpan);
+  li.appendChild(snoozeBtn);
   
   return li;
 }
 
 /**
- * Render all tasks to the DOM
+ * Render all active tasks to the DOM
  * @param {Array} tasks - Array of task objects
  */
 function renderTasks(tasks) {
@@ -177,6 +231,60 @@ function renderTasks(tasks) {
   sortedTasks.forEach(task => {
     const taskElement = renderTask(task);
     elements.taskList.appendChild(taskElement);
+  });
+}
+
+/**
+ * Render an archived task item
+ * @param {Object} task - Archived task object
+ * @returns {HTMLElement} Archived task list item element
+ */
+function renderArchivedTask(task) {
+  const li = document.createElement('li');
+  li.className = 'archive-item';
+  li.dataset.taskId = task.id;
+  
+  const textSpan = document.createElement('span');
+  textSpan.className = 'archive-task-text';
+  textSpan.textContent = task.text;
+  
+  const originalDuration = Math.round(task.totalDuration / 60000);
+  const durationSpan = document.createElement('span');
+  durationSpan.className = 'archive-duration';
+  durationSpan.textContent = `${originalDuration} min`;
+  
+  // Revive button
+  const reviveBtn = document.createElement('button');
+  reviveBtn.className = 'revive-btn';
+  reviveBtn.title = 'Revive task';
+  reviveBtn.textContent = '♻️';
+  reviveBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleRevive(task.id);
+  });
+  
+  li.appendChild(textSpan);
+  li.appendChild(durationSpan);
+  li.appendChild(reviveBtn);
+  
+  return li;
+}
+
+/**
+ * Render all archived tasks to the DOM
+ * @param {Array} tasks - Array of archived task objects
+ */
+function renderArchivedTasks(tasks) {
+  elements.archiveList.innerHTML = '';
+  
+  if (tasks.length === 0) {
+    elements.archiveList.innerHTML = '<li class="archive-empty">No archived tasks</li>';
+    return;
+  }
+  
+  tasks.forEach(task => {
+    const taskElement = renderArchivedTask(task);
+    elements.archiveList.appendChild(taskElement);
   });
 }
 
@@ -237,6 +345,127 @@ function removeTask(taskId) {
 }
 
 /**
+ * Archive a task instead of removing it
+ * @param {string} taskId - Task ID to archive
+ */
+function archiveTask(taskId) {
+  const tasks = getTasks();
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return;
+  
+  const task = tasks[taskIndex];
+  
+  // Remove from active tasks
+  tasks.splice(taskIndex, 1);
+  saveTasks(tasks);
+  
+  // Add to archive
+  const archivedTasks = getArchivedTasks();
+  archivedTasks.push({
+    ...task,
+    status: 'archived',
+    archivedAt: Date.now()
+  });
+  saveArchivedTasks(archivedTasks);
+  
+  // Remove from DOM
+  const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+  if (taskElement) {
+    taskElement.remove();
+  }
+  
+  // Update archive display if visible
+  renderArchivedTasks(getArchivedTasks());
+}
+
+/**
+ * Handle manual completion via checkbox
+ * @param {string} taskId - Task ID to complete
+ */
+function handleManualComplete(taskId) {
+  const tasks = getTasks();
+  const task = tasks.find(t => t.id === taskId);
+  
+  if (!task) return;
+  
+  // Snap timer to 0 to trigger immediate destruction
+  task.expiresAt = Date.now();
+  saveTasks(tasks);
+  
+  // Start destruction immediately
+  startDestruction(task);
+}
+
+/**
+ * Handle snooze button click - add 60 seconds to timer
+ * @param {string} taskId - Task ID to snooze
+ */
+function handleSnooze(taskId) {
+  const tasks = getTasks();
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return;
+  
+  // Add 60 seconds to the timer
+  tasks[taskIndex].expiresAt += CONFIG.SNOOZE_DURATION;
+  saveTasks(tasks);
+  
+  // Update the countdown display immediately
+  const remainingMs = tasks[taskIndex].expiresAt - Date.now();
+  updateCountdown(taskId, remainingMs, tasks[taskIndex].totalDuration);
+}
+
+/**
+ * Handle revive button click - restore archived task
+ * @param {string} taskId - Task ID to revive
+ */
+function handleRevive(taskId) {
+  const archivedTasks = getArchivedTasks();
+  const taskIndex = archivedTasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return;
+  
+  const task = archivedTasks[taskIndex];
+  
+  // Remove from archive
+  archivedTasks.splice(taskIndex, 1);
+  saveArchivedTasks(archivedTasks);
+  
+  // Add back to active tasks with original duration
+  const tasks = getTasks();
+  const now = Date.now();
+  const revivedTask = {
+    ...task,
+    status: 'alive',
+    expiresAt: now + task.totalDuration,
+    revivedAt: now
+  };
+  tasks.push(revivedTask);
+  saveTasks(tasks);
+  
+  // Add to DOM
+  const taskElement = renderTask(revivedTask);
+  elements.taskList.appendChild(taskElement);
+  
+  // Update archive display
+  renderArchivedTasks(getArchivedTasks());
+}
+
+/**
+ * Handle archive toggle button click
+ */
+function handleArchiveToggle() {
+  elements.archiveSection.classList.toggle('hidden');
+  const isVisible = !elements.archiveSection.classList.contains('hidden');
+  elements.archiveToggle.textContent = isVisible ? '📂' : '📁';
+  
+  if (isVisible) {
+    renderArchivedTasks(getArchivedTasks());
+  }
+}
+
+/**
  * Start the destruction process for a task
  * @param {Object} task - Task object
  */
@@ -268,9 +497,9 @@ function startDestruction(task) {
     });
   }
   
-  // Remove after destruction time
+  // Remove after destruction time - archive instead of completely delete
   setTimeout(() => {
-    removeTask(task.id);
+    archiveTask(task.id);
   }, CONFIG.DESTRUCTION_TIME);
 }
 
@@ -348,6 +577,9 @@ function init() {
   
   // Render initial tasks
   renderTasks(tasks);
+  
+  // Set up archive toggle handler
+  elements.archiveToggle.addEventListener('click', handleArchiveToggle);
   
   // Start countdown engine
   startCountdownEngine();

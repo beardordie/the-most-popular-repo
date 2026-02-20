@@ -71,6 +71,28 @@ body {
   padding: var(--spacing-md) 0;
 }
 
+.header-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.archive-toggle {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.archive-toggle:hover {
+  border-color: var(--neon-green);
+  transform: scale(1.1);
+}
+
 .app-header h1 {
   font-family: var(--font-heading);
   font-size: clamp(1.5rem, 5vw, 2.5rem);
@@ -248,12 +270,38 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--neon-green);
+  flex-shrink: 0;
+}
+
 .task-text {
   flex: 1;
   font-size: 1.2rem;
   font-weight: 500;
   word-break: break-word;
   min-width: 0;
+}
+
+/* Snooze button */
+.snooze-btn {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.snooze-btn:hover {
+  border-color: var(--neon-yellow);
+  background: rgba(255, 221, 0, 0.1);
+  transform: scale(1.1);
 }
 
 /* Individual character spans for disintegration */
@@ -282,6 +330,7 @@ body {
   transition: var(--transition-normal);
   min-width: 90px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 /* Timer color states */
@@ -350,6 +399,83 @@ body {
     transform: translateY(-20px) scale(1.5) rotate(15deg);
     filter: blur(5px);
   }
+}
+
+/* ========================================
+   Archive Section Styles
+   ======================================== */
+
+.archive-section {
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-glass);
+  padding-top: var(--spacing-md);
+}
+
+.archive-heading {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: 0.1em;
+}
+
+.archive-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.archive-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.archive-task-text {
+  flex: 1;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+.archive-duration {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.revive-btn {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.revive-btn:hover {
+  border-color: var(--neon-green);
+  background: rgba(0, 255, 136, 0.1);
+  transform: scale(1.1);
+}
+
+.archive-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: var(--spacing-sm);
 }
 
 /* ========================================

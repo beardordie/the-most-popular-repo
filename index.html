@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ephemeral To-Do List</title>
+  <title>The Most Popular Repo on Github: Ephemeral To-Do List</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,10 @@
 <body>
   <div class="app-container">
     <header class="app-header">
-      <h1>The Most Popular Repo on Github</h1>
+      <div class="header-top">
+        <h1>The Most Popular Repo on Github</h1>
+        <button id="archive-toggle" class="archive-toggle" title="Toggle Archive">📁</button>
+      </div>
       <h2>Ephemeral To-Do List</h2>
     </header>
     
@@ -35,9 +38,9 @@
           <option value="30">30 seconds</option>
           <option value="60" selected>60 seconds</option>
           <option value="120">2 minutes</option>
-          <option value="360">6 minutes</option>
-          <option value="720">12 minutes</option>
-          <option value="1440">24 minutes</option>
+          <option value="300">5 minutes</option>
+          <option value="600">10 minutes</option>
+          <option value="900">15 minutes</option>
         </select>
         <button type="submit" class="submit-btn">
           <span>Add Task</span>
@@ -46,6 +49,11 @@
     </form>
     
     <ul id="task-list" class="task-list"></ul>
+    
+    <section id="archive-section" class="archive-section hidden">
+      <h3 class="archive-heading">📁 Task Archive</h3>
+      <ul id="archive-list" class="archive-list"></ul>
+    </section>
   </div>
   
   <script src="script.js"></script>

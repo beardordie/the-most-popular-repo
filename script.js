@@ -4,6 +4,122 @@
  */
 
 // ========================================
+// Audio System (Web Audio API for placeholder sounds)
+// ========================================
+
+const AudioSystem = {
+  audioContext: null,
+  
+  /**
+   * Initialize audio context on user interaction
+   */
+  init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+  },
+  
+  /**
+   * Play warning sound (alert) - ascending tone
+   */
+  playWarningSound() {
+    this.init();
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+    
+    // Create ascending alert tone
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(400, now);
+    oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+    oscillator.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.1, now + 0.2);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    
+    oscillator.start(now);
+    oscillator.stop(now + 0.3);
+  },
+  
+  /**
+   * Play paper-trash sound - crinkle/crush sound
+   */
+  playPaperTrashSound() {
+    this.init();
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+    
+    // Create noise-based crinkle sound
+    const bufferSize = ctx.sampleRate * 0.2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
+    }
+    
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    
+    // Add filter for crinkle effect
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2000;
+    filter.Q.value = 1;
+    
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.4, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    noise.start(now);
+  },
+  
+  /**
+   * Play restored sound - ascending chime
+   */
+  playRestoredSound() {
+    this.init();
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+    
+    // Create ascending chime
+    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+    
+    frequencies.forEach((freq, index) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      
+      const startTime = now + (index * 0.08);
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.4);
+    });
+  }
+};
+
+// ========================================
 // Configuration
 // ========================================
 
@@ -13,6 +129,7 @@ const CONFIG = {
   DESTRUCTION_TIME: 5000, // 5 seconds in ms
   UPDATE_INTERVAL: 50,    // Update UI every 50ms for smooth countdown
   SNOOZE_DURATION: 60000,  // 60 seconds snooze
+  ALERT_WARNING_TIME: 10000, // 10 seconds - play warning sound
   TIMER_THRESHOLDS: {
     WARNING: 0.5,  // 50% remaining - yellow
     DANGER: 0.2   // 20% remaining - red
@@ -110,7 +227,9 @@ function createTask(text, lifespanSeconds) {
     text: text.trim(),
     expiresAt: now + (lifespanSeconds * 1000),
     totalDuration: lifespanSeconds * 1000,
-    status: 'alive'
+    status: 'alive',
+    alertEnabled: false,
+    alertPlayed: false
   };
 }
 
@@ -196,6 +315,21 @@ function renderTask(task) {
   countdownSpan.className = 'countdown healthy';
   countdownSpan.dataset.countdown = task.id;
   
+  // Actions container
+  const actionsDiv = document.createElement('div');
+  actionsDiv.className = 'task-actions';
+  
+  // Alert button (toggle)
+  const alertBtn = document.createElement('button');
+  alertBtn.className = 'alert-btn' + (task.alertEnabled ? ' active' : '');
+  alertBtn.title = 'Toggle alert (play sound at 10s)';
+  alertBtn.textContent = '🔔';
+  alertBtn.dataset.taskId = task.id;
+  alertBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleToggleAlert(task.id);
+  });
+  
   // Snooze button
   const snoozeBtn = document.createElement('button');
   snoozeBtn.className = 'snooze-btn';
@@ -206,10 +340,13 @@ function renderTask(task) {
     handleSnooze(task.id);
   });
   
+  actionsDiv.appendChild(alertBtn);
+  actionsDiv.appendChild(snoozeBtn);
+  
   li.appendChild(checkbox);
   li.appendChild(textSpan);
   li.appendChild(countdownSpan);
-  li.appendChild(snoozeBtn);
+  li.appendChild(actionsDiv);
   
   return li;
 }
@@ -369,6 +506,9 @@ function archiveTask(taskId) {
   });
   saveArchivedTasks(archivedTasks);
   
+  // Play paper-trash sound
+  AudioSystem.playPaperTrashSound();
+  
   // Remove from DOM
   const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
   if (taskElement) {
@@ -392,6 +532,9 @@ function handleManualComplete(taskId) {
   // Snap timer to 0 to trigger immediate destruction
   task.expiresAt = Date.now();
   saveTasks(tasks);
+  
+  // Play paper-trash sound
+  AudioSystem.playPaperTrashSound();
   
   // Start destruction immediately
   startDestruction(task);
@@ -417,6 +560,29 @@ function handleSnooze(taskId) {
 }
 
 /**
+ * Handle alert toggle button click
+ * @param {string} taskId - Task ID to toggle alert for
+ */
+function handleToggleAlert(taskId) {
+  const tasks = getTasks();
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return;
+  
+  // Toggle alert state
+  tasks[taskIndex].alertEnabled = !tasks[taskIndex].alertEnabled;
+  // Reset alertPlayed when toggling
+  tasks[taskIndex].alertPlayed = false;
+  saveTasks(tasks);
+  
+  // Update button appearance
+  const alertBtn = document.querySelector(`[data-task-id="${taskId}"] .alert-btn`);
+  if (alertBtn) {
+    alertBtn.classList.toggle('active', tasks[taskIndex].alertEnabled);
+  }
+}
+
+/**
  * Handle revive button click - restore archived task
  * @param {string} taskId - Task ID to revive
  */
@@ -439,10 +605,15 @@ function handleRevive(taskId) {
     ...task,
     status: 'alive',
     expiresAt: now + task.totalDuration,
-    revivedAt: now
+    revivedAt: now,
+    alertEnabled: false,
+    alertPlayed: false
   };
   tasks.push(revivedTask);
   saveTasks(tasks);
+  
+  // Play restored sound
+  AudioSystem.playRestoredSound();
   
   // Add to DOM
   const taskElement = renderTask(revivedTask);
@@ -529,6 +700,16 @@ function startCountdownEngine() {
       } else {
         // Update countdown display
         updateCountdown(task.id, remainingMs, task.totalDuration);
+        
+        // Check if alert should be played (at 10 seconds remaining)
+        if (task.alertEnabled && !task.alertPlayed && remainingMs <= CONFIG.ALERT_WARNING_TIME && remainingMs > 0) {
+          // Mark alert as played and save
+          task.alertPlayed = true;
+          saveTasks(tasks);
+          
+          // Play warning sound
+          AudioSystem.playWarningSound();
+        }
       }
     });
     
